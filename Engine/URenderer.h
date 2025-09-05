@@ -1,6 +1,7 @@
-#pragma once
+﻿#pragma once
 #include "stdafx.h"
 #include "UMesh.h"
+#include "UCamera.h"
 
 class URenderer
 {
@@ -18,11 +19,17 @@ private:
     ID3D11PixelShader* pixelShader;
     ID3D11InputLayout* inputLayout;
 
+    // Depth stencil
+    ID3D11DepthStencilState* depthStencilState;
+
     // Constant buffer
     ID3D11Buffer* constantBuffer;
 
     // Viewport
     D3D11_VIEWPORT viewport;
+
+    // Camera
+    UCamera* currentCamera;
 
     // Window handle
     HWND hWnd;
@@ -38,6 +45,7 @@ public:
     bool Create(HWND windowHandle);
     bool CreateShader();
     bool CreateRasterizerState();
+    bool CreateDepthStencilState();
     bool CreateConstantBuffer();
     void Release();
     void ReleaseShader();
@@ -72,6 +80,10 @@ public:
     void SetIndexBuffer(ID3D11Buffer* buffer, DXGI_FORMAT format = DXGI_FORMAT_R32_UINT);
     void SetConstantBuffer(ID3D11Buffer* buffer, UINT slot = 0);
     void SetTexture(ID3D11ShaderResourceView* srv, UINT slot = 0);
+
+    // Set Active Camera
+    void SetActiveCamera(UCamera* camera) { currentCamera = camera; }
+    UCamera* GetCurrentCamera() { return currentCamera; }
 
     // Constant buffer updates
     bool UpdateConstantBuffer(const void* data, size_t sizeInBytes);

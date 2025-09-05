@@ -23,10 +23,6 @@ private:
 	static WCHAR WindowClass[];
 	static WCHAR DefaultTitle[];
 
-	std::wstring windowTitle;
-	int windowWidth;
-	int windowHeight;
-
 public:
 	UApplication();
 	virtual ~UApplication();
@@ -53,8 +49,14 @@ public:
 	// Application state
 	bool IsRunning() const { return bIsRunning; }
 	void RequestExit() { bIsRunning = false; }
+	float GetAspectRatio(){ return windowWidth / windowHeight; }
 
 protected:
+
+	std::wstring windowTitle;
+	int windowWidth;
+	int windowHeight;
+
 	// Internal methods
 	bool CreateMainWindow(HINSTANCE hInstance);
 	void ProcessMessages();

@@ -87,8 +87,20 @@
     <ClCompile Include="UMeshFactory.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="SimpleApplication.cpp">
+    <ClCompile Include="EngineApplication.cpp">
       <Filter>Application\소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="FQuaternion.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="FVector.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="FVector4.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="UCamera.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -146,7 +158,7 @@
     <ClInclude Include="UApplication.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="SimpleApplication.h">
+    <ClInclude Include="EngineApplication.h">
       <Filter>Application\헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="USphere.h">
@@ -156,6 +168,21 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="UMeshFactory.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="FMatrix.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="FQuaternion.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="FVector.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="FVector4.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="UCamera.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

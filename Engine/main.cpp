@@ -1,12 +1,12 @@
 ﻿#include "stdafx.h"
 #include "UApplication.h"
-#include "SimpleApplication.h"
+#include "EngineApplication.h"
 
 // Engine entry point
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
     // Create application instance
-    SimpleApplication app;
+    EngineApplication app;
 
     // Initialize engine systems
     if (!app.Initialize(hInstance, L"Simple Engine", 1024, 1024))

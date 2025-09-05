@@ -132,6 +132,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="FQuaternion.cpp" />
+    <ClCompile Include="FVector.cpp" />
+    <ClCompile Include="FVector4.cpp" />
     <ClCompile Include="ImGui\imgui.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
@@ -181,8 +184,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="SimpleApplication.cpp" />
+    <ClCompile Include="EngineApplication.cpp" />
     <ClCompile Include="UApplication.cpp" />
+    <ClCompile Include="UCamera.cpp" />
     <ClCompile Include="UMesh.cpp" />
     <ClCompile Include="UMeshFactory.cpp" />
     <ClCompile Include="USphere.cpp" />
@@ -193,6 +197,10 @@
     <ClCompile Include="URenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FMatrix.h" />
+    <ClInclude Include="FQuaternion.h" />
+    <ClInclude Include="FVector.h" />
+    <ClInclude Include="FVector4.h" />
     <ClInclude Include="FVertexSimple.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />
@@ -203,10 +211,11 @@
     <ClInclude Include="ImGui\imstb_rectpack.h" />
     <ClInclude Include="ImGui\imstb_textedit.h" />
     <ClInclude Include="ImGui\imstb_truetype.h" />
-    <ClInclude Include="SimpleApplication.h" />
+    <ClInclude Include="EngineApplication.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="UApplication.h" />
+    <ClInclude Include="UCamera.h" />
     <ClInclude Include="UMesh.h" />
     <ClInclude Include="UMeshFactory.h" />
     <ClInclude Include="USphere.h" />

@@ -48,6 +48,12 @@ bool URenderer::Create(HWND windowHandle)
 	int width, height;
 	GetBackBufferSize(width, height);
 
+	if (!CreateDepthStencilState())
+	{
+		LogError("CreateDepthStencilState", E_FAIL);
+		return false;
+	}
+
 	if (!CreateDepthStencilView(width, height))
 	{
 		LogError("CreateDepthStencilView", E_FAIL);
@@ -173,7 +179,7 @@ bool URenderer::CreateRasterizerState()
 {
 	D3D11_RASTERIZER_DESC rasterizerDesc = {};
 	rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-	rasterizerDesc.CullMode = D3D11_CULL_BACK;           // 뒷면 제거
+	rasterizerDesc.CullMode = D3D11_CULL_BACK;           // 컬링 비활성화
 	rasterizerDesc.FrontCounterClockwise = FALSE;
 	rasterizerDesc.DepthBias = 0;
 	rasterizerDesc.DepthBiasClamp = 0.0f;
@@ -190,7 +196,7 @@ bool URenderer::CreateRasterizerState()
 bool URenderer::CreateConstantBuffer()
 {
 	D3D11_BUFFER_DESC bufferDesc = {};
-	bufferDesc.ByteWidth = 32;
+	bufferDesc.ByteWidth = sizeof(float) * 16;
 	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -272,6 +278,7 @@ void URenderer::Release()
 	ReleaseConstantBuffer();
 
 	SAFE_RELEASE(rasterizerState);
+	SAFE_RELEASE(depthStencilState);
 	SAFE_RELEASE(depthStencilView);
 	SAFE_RELEASE(renderTargetView);
 	SAFE_RELEASE(swapChain);
@@ -337,6 +344,18 @@ ID3D11Buffer* URenderer::CreateIndexBuffer(const void* data, size_t sizeInBytes)
 	}
 
 	return buffer;
+}
+
+bool URenderer::CreateDepthStencilState()
+{
+	D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {};
+	depthStencilDesc.DepthEnable = TRUE;                    // 깊이 테스트 활성화
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;  // 깊이 버퍼 쓰기 허용
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;     // 더 가까운 픽셀만 렌더링
+	depthStencilDesc.StencilEnable = FALSE;                 // 스텐실 테스트 비활성화
+
+	HRESULT hr = device->CreateDepthStencilState(&depthStencilDesc, &depthStencilState);
+	return CheckResult(hr, "CreateDepthStencilState");
 }
 
 ID3D11Texture2D* URenderer::CreateTexture2D(int width, int height, DXGI_FORMAT format, const void* data)
@@ -458,6 +477,11 @@ void URenderer::PrepareShader()
 	if (constantBuffer)
 	{
 		deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+	}
+	// 깊이 스텐실 상태 설정
+	if (depthStencilState)
+	{
+		deviceContext->OMSetDepthStencilState(depthStencilState, 1);
 	}
 }
 
