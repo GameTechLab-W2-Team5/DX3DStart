@@ -120,6 +120,40 @@ struct FQuaternion
         return qx * qy * qz;
     }
 
+    FVector ToEulerXYZ() const
+    {
+        // 너가 이미 만든 함수와 동일 규약의 회전행렬
+        FMatrix R = ToMatrixRow();
+        // R = Rx * Ry * Rz 에서 유도된 요소 사용
+        // R[0][2] = sin(ry)
+        float sy = R.M[0][2];
+        // 수치 오차 방지용 클램프
+        if (sy > 1.0f) sy = 1.0f;
+        if (sy < -1.0f) sy = -1.0f;
+        float ry = asinf(sy);
+        float cy = cosf(ry);
+        float rx, rz;
+        const float EPS = 1e-6f;
+        if (fabsf(cy) > EPS) {
+            // 일반 케이스
+            // R[1][2] = -sin(rx)*cos(ry)  → rx = atan2(-R[1][2], R[2][2])
+            rx = atan2f(-R.M[1][2], R.M[2][2]);
+            // R[0][1] = -cos(ry)*sin(rz), R[0][0] = cos(ry)*cos(rz)
+            // → rz = atan2(-R[0][1], R[0][0])
+            rz = atan2f(-R.M[0][1], R.M[0][0]);
+        }
+        else {
+            // 짐벌락( |cos(ry)| ~ 0 ) : rz가 정의 불가 → rz=0 으로 두고 rx만 결정
+            rz = 0.0f;
+            // 이때는 R[1][0], R[1][1]에서 rx를 복원
+            rx = atan2f(R.M[1][0], R.M[1][1]);
+        }
+        // X=rx, Y=ry, Z=rz (라디안)
+        return FVector(rx, ry, rz);
+    }
+
+
+
     // fwd: 카메라가 바라볼 "월드 방향" (우리 규약에서 Forward = q·(-Y))
 // up : 월드 기준 위벡터 (보통 (0,0,1))
     static FQuaternion LookRotation(const FVector& fwd, const FVector& up)

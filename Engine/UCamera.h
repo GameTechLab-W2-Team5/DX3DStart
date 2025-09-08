@@ -163,6 +163,29 @@ public:
         RecalcAxesFromQuat();
         UpdateView();
     }
+    FVector GetEulerXYZRad() const {
+        return mRot.ToEulerXYZ(); // 앞서 넣은 ToEulerXYZ() 사용 (라디안)
+    }
+    FVector GetEulerXYZDeg() const {
+        FVector r = GetEulerXYZRad();
+        const float R2D = 180.0f / PI;
+        return FVector(r.X * R2D, r.Y * R2D, r.Z * R2D);
+    }
+    void SetEulerXYZRad(float rx, float ry, float rz) {
+        // 롤 잠금 옵션
+        if (bLockRoll) rz = 0.0f;
+        mRot = FQuaternion::FromEulerXYZ(rx, ry, rz).Normalized();
+        // 축/뷰 갱신
+        RecalcAxesFromQuat();
+        // pitch(편의용) 재계산: forward.z = sin(pitch)
+        float fz = std::clamp(mForward.Z, -1.0f, 1.0f);
+        mPitch = asinf(fz);
+        UpdateView();
+    }
+    void SetEulerXYZDeg(float rxDeg, float ryDeg, float rzDeg) {
+        const float D2R = PI / 180.0f;
+        SetEulerXYZRad(rxDeg * D2R, ryDeg * D2R, rzDeg * D2R);
+    }
 private:
     // ---- 내부 상태 ----
     FVector mEye;      // 월드 위치

@@ -124,13 +124,13 @@ void UControlPanel::CameraManagementSection()
     float cameraLocation[3] = { pos.X, pos.Y, pos.Z };
 
     // === 회전(Yaw, Pitch, Roll=0 표기) ===
-    float yawZ = 0.f, pitch = 0.f;
-    camera->GetYawPitch(yawZ, pitch);
+    FQuaternion q = camera->GetRotation();
+    FVector eulerRotation = camera->GetEulerXYZDeg();
     float cameraRotation[3] = {
-        yawZ * 180.0f / 3.14159265f, // deg
-        pitch * 180.0f / 3.14159265f, // deg
-        0.0f // roll 고정
+        eulerRotation.X, eulerRotation.Y, eulerRotation.Z
     };
+
+    bool rotationEdited = false;
 
     // 나머지는 테이블로
     if (ImGui::BeginTable("EditableCameraTable", 4, ImGuiTableFlags_None))
@@ -149,13 +149,23 @@ void UControlPanel::CameraManagementSection()
 
         // Camera Rotation 행
         ImGui::TableNextRow();
+        
+
         for (int i = 0; i < 3; i++)
         {
             ImGui::TableSetColumnIndex(i);
             ImGui::SetNextItemWidth(-1);
-            ImGui::InputFloat(("##rot" + std::to_string(i)).c_str(),
-                &cameraRotation[i], 0.0f, 0.0f, "%.3f");
+            if (ImGui::InputFloat(("##rot" + std::to_string(i)).c_str(),
+                &cameraRotation[i], 0.0f, 0.0f, "%.3f"))
+            {
+                // 드래그 중 계속 true가 됨
+            }
+            if (ImGui::IsItemDeactivatedAfterEdit())
+            {
+                rotationEdited = true;
+            }
         }
+
         ImGui::TableSetColumnIndex(3);
         ImGui::Text("Camera Rotation");
 
@@ -165,9 +175,13 @@ void UControlPanel::CameraManagementSection()
     // === 변경사항을 카메라에 반영 ===
     // 위치
     camera->SetLocation(FVector(cameraLocation[0], cameraLocation[1], cameraLocation[2]));
+    if (rotationEdited)
+    {
+        camera->SetEulerXYZDeg(cameraRotation[0], cameraRotation[1], cameraRotation[2]);
+    }
 
     // 회전 (roll은 무시)
-    float newYawRad = cameraRotation[0] * 3.14159265f / 180.0f;
-    float newPitchRad = cameraRotation[1] * 3.14159265f / 180.0f;
+    //float newYawRad = cameraRotation[0] * 3.14159265f / 180.0f;
+    //float newPitchRad = cameraRotation[1] * 3.14159265f / 180.0f;
     //camera->SetYawPitch(newYawRad, newPitchRad);
 }
