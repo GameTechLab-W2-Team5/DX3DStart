@@ -14,12 +14,14 @@ typedef unsigned int uint32;
 public: \
     virtual UClass* GetClass() const; \
     static UClass* StaticClass(); \
+    static TUniquePtr<ClassName> CreateUniqueInstance(); \
 private: \
     static UClass* s_StaticClass; \
     static UObject* CreateInstance();
 
 #define IMPLEMENT_ROOT_UCLASS(ClassName) \
 UObject* ClassName::CreateInstance() { return new ClassName(); } \
+TUniquePtr<ClassName> ClassName::CreateUniqueInstance() { return MakeUnique<ClassName>(); } \
 UClass* ClassName::s_StaticClass = UClass::RegisterToFactory( \
     #ClassName, &ClassName::CreateInstance, ""); \
 UClass* ClassName::StaticClass() { return s_StaticClass; } \
@@ -30,12 +32,14 @@ public: \
     using Super = ParentClass; \
     UClass* GetClass() const override; \
     static UClass* StaticClass(); \
+    static TUniquePtr<ClassName> CreateUniqueInstance(); \
 private: \
     static UClass* s_StaticClass; \
     static UObject* CreateInstance();
 
 #define IMPLEMENT_UCLASS(ClassName, ParentClass) \
 UObject* ClassName::CreateInstance() { return new ClassName(); } \
+TUniquePtr<ClassName> ClassName::CreateUniqueInstance() { return MakeUnique<ClassName>(); } \
 UClass* ClassName::s_StaticClass = UClass::RegisterToFactory( \
     #ClassName, &ClassName::CreateInstance, #ParentClass); \
 UClass* ClassName::StaticClass() { return s_StaticClass; } \
@@ -56,6 +60,30 @@ public:
     static inline TArray<UObject*> GUObjectArray;
     uint32 UUID;
     uint32 InternalIndex;
+
+    static void CleanupGlobalObjectArray()
+    {
+        char buffer[256];
+        sprintf_s(buffer, "CleanupGlobalObjectArray called: %zu objects in array\n", GUObjectArray.size());
+        OutputDebugStringA(buffer);
+        
+        // 남아있는 객체들의 정보 출력
+        size_t remainingCount = 0;
+        for (size_t i = 0; i < GUObjectArray.size(); ++i) {
+            if (GUObjectArray[i] != nullptr) {
+                sprintf_s(buffer, "Remaining object at index %zu, UUID: %u\n", i, GUObjectArray[i]->UUID);
+                OutputDebugStringA(buffer);
+                remainingCount++;
+            }
+        }
+        sprintf_s(buffer, "Total remaining objects: %zu\n", remainingCount);
+        OutputDebugStringA(buffer);
+        
+        GUObjectArray.clear();
+        FreeIndices.clear();
+        NextFreshIndex = 0;
+        OutputDebugStringA("CleanupGlobalObjectArray completed\n");
+    }
 
     UObject()
     {
@@ -114,8 +142,10 @@ public:
 
     void operator delete(void* ptr, size_t size)
     {
-        UEngineStatics::RemoveAllocation(size);
-        ::operator delete(ptr);
+        if (ptr != nullptr) {
+            UEngineStatics::RemoveAllocation(size);
+            ::operator delete(ptr);
+        }
     }
 
     // 배치 new/delete도 오버라이드 (필요한 경우)

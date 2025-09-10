@@ -35,7 +35,7 @@ void UGizmoComponent::Draw(URenderer& renderer)
 	}
 
 	UpdateConstantBuffer(renderer);
-	renderer.DrawMesh(mesh);
+	renderer.DrawMesh(mesh.get());
 }
 
 void UGizmoComponent::DrawOnTop(URenderer& renderer)
@@ -46,5 +46,5 @@ void UGizmoComponent::DrawOnTop(URenderer& renderer)
 	}
 
 	UpdateConstantBuffer(renderer);
-	renderer.DrawMeshOnTop(mesh);
+	renderer.DrawMeshOnTop(mesh.get());
 }

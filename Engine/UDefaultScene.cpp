@@ -15,9 +15,9 @@ bool UDefaultScene::OnInitialize()
     if (IsFirstTime)
     {
         // 컴포넌트 생성
-        USphereComp* sphere = new USphereComp({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.5f, 0.5f, 0.5f });
+        TUniquePtr<USphereComp> sphere = MakeUnique<USphereComp>(FVector( 0.0f, 0.0f, 0.0f ), FVector(0.0f, 0.0f, 0.0f), FVector(0.5f, 0.5f, 0.5f));
 
-        AddObject(sphere);
+        AddObject(std::move(sphere));
         IsFirstTime = false;
     }
 

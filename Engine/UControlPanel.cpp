@@ -5,7 +5,7 @@
 #include "USceneManager.h"
 #include "UScene.h"
 #include "UDefaultScene.h"
-
+#include "UEngineStatics.h"
 
 UControlPanel::UControlPanel(USceneManager* sceneManager)
     : ImGuiWindowWrapper("Jungle Control Panel"), SceneManager(sceneManager)
@@ -48,10 +48,8 @@ void UControlPanel::PrimaryInformationSection()
     ImGui::Text("FPS %.0f (%.0f ms)", frameRate, 1000.0f / frameRate);
 }
 
-USceneComponent* UControlPanel::CreateSceneComponentFromChoice(int index) {
-    auto obj = registeredTypes[primitiveChoiceIndex]->CreateDefaultObject();
-    if (!obj) return nullptr;
-    return obj->Cast<USceneComponent>();
+TUniquePtr<USceneComponent> UControlPanel::CreateSceneComponentFromChoice(int index) {
+    return registeredTypes[primitiveChoiceIndex]->CreateUniqueObject<USceneComponent>();
 }
 
 void UControlPanel::SpawnPrimitiveSection()
@@ -61,7 +59,7 @@ void UControlPanel::SpawnPrimitiveSection()
     int32 objectCount = SceneManager->GetScene()->GetObjectCount();
     if (ImGui::Button("Spawn"))
     {
-        USceneComponent* sceneComponent = CreateSceneComponentFromChoice(primitiveChoiceIndex);
+        TUniquePtr<USceneComponent> sceneComponent = CreateSceneComponentFromChoice(primitiveChoiceIndex);
         if (sceneComponent != nullptr)
         {
         sceneComponent->SetPosition(FVector(
@@ -79,7 +77,7 @@ void UControlPanel::SpawnPrimitiveSection()
             -90.0f + static_cast<float>(rand()) / RAND_MAX * 180.0f,
             -90.0f + static_cast<float>(rand()) / RAND_MAX * 180.0f
         ));
-        SceneManager->GetScene()->AddObject(sceneComponent);
+        SceneManager->GetScene()->AddObject(std::move(sceneComponent));
         }
     }
     ImGui::SameLine();
@@ -96,7 +94,7 @@ void UControlPanel::SceneManagementSection()
     if (ImGui::Button("New scene"))
     {
         // TODO : Make New Scene
-        SceneManager->SetScene(new UDefaultScene());
+        SceneManager->SetScene(MakeUnique<UDefaultScene>());
         
     }
 

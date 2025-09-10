@@ -1,6 +1,8 @@
 ﻿#include "stdafx.h"
 #include "UApplication.h"
 #include "UScene.h"
+#include "UObject.h"
+#include "UClass.h"
 
 // Static member definitions
 WCHAR UApplication::WindowClass[] = L"EngineWindowClass";
@@ -145,6 +147,11 @@ void UApplication::Shutdown()
 	renderer.ReleaseConstantBuffer();
 	renderer.ReleaseShader();
 	renderer.Release();
+
+	// Clean up remaining UObject array
+	UObject::CleanupGlobalObjectArray();
+	// Then clean up class registry
+	UClass::CleanupClassRegistry();
 
 	bIsInitialized = false;
 }
@@ -327,7 +334,7 @@ bool UApplication::OnInitialize()
 
 }
 
-UScene* UApplication::CreateDefaultScene()
+TUniquePtr<UScene> UApplication::CreateDefaultScene()
 {
-	return new UScene();
+	return MakeUnique<UScene>();
 }

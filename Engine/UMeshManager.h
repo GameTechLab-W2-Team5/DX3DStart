@@ -4,18 +4,18 @@
 #include "URenderer.h"
 #include "UEngineSubsystem.h"
 
-class UMeshManager : UEngineSubsystem
+class UMeshManager : public UEngineSubsystem
 {
 	DECLARE_UCLASS(UMeshManager, UEngineSubsystem)
 private:
-	std::unordered_map<FString, UMesh*> meshes;
+	std::unordered_map<FString, TSharedPtr<UMesh>> meshes;
 
-	UMesh* CreateMeshInternal(const TArray<FVertexPosColor>& vertices,
+	TSharedPtr<UMesh> CreateMeshInternal(const TArray<FVertexPosColor>& vertices,
 		D3D_PRIMITIVE_TOPOLOGY primitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 public:
 	UMeshManager();
 	~UMeshManager();
 
 	bool Initialize(URenderer* renderer);
-	UMesh* RetrieveMesh(FString meshName);
+	TSharedPtr<UMesh> RetrieveMesh(FString meshName);
 };

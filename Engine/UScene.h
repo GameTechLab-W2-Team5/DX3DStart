@@ -17,7 +17,7 @@ protected:
     int32 version;
     int32 primitiveCount;
     bool isInitialized;
-    TArray<USceneComponent*> objects;
+    TArray<TUniquePtr<USceneComponent>> objects;
 
     // Reference from outside
     URenderer* renderer;
@@ -27,10 +27,27 @@ protected:
     //UGizmoManager* GizmoManager;
 
     //UScene owns camera
-    UCamera* camera;
+    TUniquePtr<UCamera> camera;
 
     virtual void RenderGUI() {}
-    virtual void OnShutdown() {}
+    virtual void OnShutdown() {
+        char buffer[256];
+        sprintf_s(buffer, "UScene::OnShutdown - clearing %zu objects\n", objects.size());
+        OutputDebugStringA(buffer);
+        
+        for (size_t i = 0; i < objects.size(); ++i) {
+            if (objects[i]) {
+                // 안전하게 UUID만 출력 (UClass 정보는 이미 소멸 중일 수 있음)
+                sprintf_s(buffer, "Clearing scene object %zu: UUID %u\n", i, objects[i]->UUID);
+                OutputDebugStringA(buffer);
+            }
+        }
+        
+        objects.clear();
+        camera.reset();
+        
+        OutputDebugStringA("UScene::OnShutdown completed\n");
+    }
 public:
     UScene();
     virtual ~UScene();
@@ -44,17 +61,17 @@ public:
 
     int32 GetObjectCount() { return primitiveCount; }
 
-    static UScene* Create(json::JSON data);
+    static TUniquePtr<UScene> Create(json::JSON data);
 
-    void AddObject(USceneComponent* obj);
+    void AddObject(TUniquePtr<USceneComponent> obj);
     void SetVersion(int32 v) { version = v; }
 
     json::JSON Serialize() const override;
 
     bool Deserialize(const json::JSON& data) override;
     
-    const TArray<USceneComponent*>& GetObjects() const { return objects; }
-    UCamera* GetCamera() { return camera; }
+    const TArray<TUniquePtr<USceneComponent>>& GetObjects() const { return objects; }
+    UCamera* GetCamera() { return camera.get(); }
     URenderer* GetRenderer() { return renderer; }
     UInputManager* GetInputManager() { return inputManager; }
 };

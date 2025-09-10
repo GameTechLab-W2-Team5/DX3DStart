@@ -17,7 +17,7 @@ struct FPlane
 	FVector Normal;
 };
 
-class UGizmoManager : UEngineSubsystem
+class UGizmoManager : public UEngineSubsystem
 {
 	DECLARE_UCLASS(UGizmoManager, UEngineSubsystem)
 public:
@@ -36,7 +36,7 @@ public:
 	void NextTranslation();
 
 	UPrimitiveComponent* GetTarget() { return targetObject; }
-	TArray<UGizmoComponent*>& GetRaycastableGizmos();
+	TArray<UGizmoComponent*> GetRaycastableGizmos();
 	void BeginDrag(const FRay& mouseRay, EAxis selectedAxis);
 	void UpdateDrag(const FRay& mouseRay);
 	void EndDrag();
@@ -69,11 +69,11 @@ private:
 	FVector GetRotationVector(EAxis axis);
 
 	// 역할에 따라 프리미티브를 분리해서 저장합니다.
-	UGizmoComponent* gridPrimitive = nullptr;              // 월드 그리드
-	//TArray<UGizmoComponent*> transformGizmoPrimitives; // 이동/회전/크기 기즈모
-	TArray<UGizmoComponent*> locationGizmos;
-	TArray<UGizmoComponent*> rotationGizmos;
-	TArray<UGizmoComponent*> scaleGizmos;
+	TUniquePtr<UGizmoComponent> gridPrimitive;              // 월드 그리드
+	//TArray<TUniquePtr<UGizmoComponent>> transformGizmoPrimitives; // 이동/회전/크기 기즈모
+	TArray<TUniquePtr<UGizmoComponent>> locationGizmos;
+	TArray<TUniquePtr<UGizmoComponent>> rotationGizmos;
+	TArray<TUniquePtr<UGizmoComponent>> scaleGizmos;
 
 	FVector FindCirclePlaneIntersection(const FRay& mouseRay, const FPlane& plane);
 };

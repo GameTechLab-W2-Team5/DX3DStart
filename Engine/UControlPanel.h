@@ -26,6 +26,6 @@ public:
 	void SpawnPrimitiveSection();
 	void SceneManagementSection();
 	void CameraManagementSection();
-	USceneComponent* CreateSceneComponentFromChoice(int index);
+	TUniquePtr<USceneComponent> CreateSceneComponentFromChoice(int index);
 };
 

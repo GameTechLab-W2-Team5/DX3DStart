@@ -7,8 +7,7 @@
 IMPLEMENT_UCLASS(USceneManager, UEngineSubsystem)
 USceneManager::~USceneManager()
 {
-	if (currentScene)
-		delete currentScene;
+	currentScene.reset();
 }
 
 bool USceneManager::Initialize(UApplication* _application)
@@ -24,17 +23,12 @@ bool USceneManager::Initialize(UApplication* _application)
 
 UScene* USceneManager::GetScene()
 {
-	return currentScene;
+	return currentScene.get();
 }
 
-void USceneManager::SetScene(UScene* scene)
+void USceneManager::SetScene(TUniquePtr<UScene> scene)
 {
-	if (currentScene != nullptr)
-	{
-		delete currentScene;
-	}
-
-	currentScene = scene;
+	currentScene = std::move(scene);
 
 	currentScene->Initialize(
 		&application->GetRenderer(),

@@ -11,23 +11,17 @@ class EditorApplication : public UApplication
 {
 private:
 	UGizmoManager gizmoManager;
-	TArray<USceneComponent*> sceneComponents;
+	TArray<TUniquePtr<USceneComponent>> sceneComponents;
 
-	USceneComponent* selectedSceneComponent;
-
-	UControlPanel* controlPanel;
-	USceneComponentPropertyWindow* propertyWindow;
+	TUniquePtr<USceneComponent> selectedSceneComponent;
+	TUniquePtr<UControlPanel> controlPanel;
+	TUniquePtr<USceneComponentPropertyWindow> propertyWindow;
 
 public:
 	EditorApplication() = default;
-	~EditorApplication()
-	{
-		delete controlPanel;
-		delete propertyWindow;
-		controlPanel = nullptr;
-		propertyWindow = nullptr;
-	}
-	UScene* CreateDefaultScene() override;
+	~EditorApplication() = default;
+
+	TUniquePtr<UScene> CreateDefaultScene() override;
 
 	void OnSceneChange() override;
 

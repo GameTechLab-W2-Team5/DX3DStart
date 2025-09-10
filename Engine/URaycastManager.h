@@ -15,7 +15,7 @@ struct FRay
 	FVector Direction;
 };
 
-class URaycastManager : UEngineSubsystem
+class URaycastManager : public UEngineSubsystem
 {
 	DECLARE_UCLASS(URaycastManager, UEngineSubsystem)
 public:

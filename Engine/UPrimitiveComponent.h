@@ -12,7 +12,7 @@ class UPrimitiveComponent : public USceneComponent
 {
 	DECLARE_UCLASS(UPrimitiveComponent, USceneComponent)
 protected:
-	UMesh* mesh;
+	TSharedPtr<UMesh> mesh;
 	FVector4 Color = { 1, 1, 1, 1 };
 public:
 	UPrimitiveComponent(FVector loc = { 0,0,0 }, FVector rot = { 0,0,0 }, FVector scl = { 1,1,1 })
@@ -31,7 +31,7 @@ public:
 
 	bool CountOnInspector() override { return true; }
 
-	UMesh* GetMesh() { return mesh; }
+	UMesh* GetMesh() { return mesh.get(); }
 
 	void SetColor(const FVector4& newColor) { Color = newColor; }
 	FVector4 GetColor() const { return Color; }

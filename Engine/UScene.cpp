@@ -19,11 +19,6 @@ UScene::UScene()
 UScene::~UScene()
 {
 	OnShutdown();
-	for (UObject* object : objects)
-	{
-		delete object;
-	}
-	delete camera;
 }
 
 bool UScene::Initialize(URenderer* r, UMeshManager* mm, UInputManager* im)
@@ -36,29 +31,29 @@ bool UScene::Initialize(URenderer* r, UMeshManager* mm, UInputManager* im)
 	backBufferHeight = 0.0f;
 
 	// 모든 Primitive 컴포넌트 초기화
-	for (UObject* obj : objects)
+	for (const TUniquePtr<USceneComponent>& object : objects)
 	{
-		if (UPrimitiveComponent* primitive = obj->Cast<UPrimitiveComponent>())
+		if (UPrimitiveComponent* primitive = object.get()->Cast<UPrimitiveComponent>())
 		{
 			primitive->Init(meshManager);
 		}
 	}
 
-	camera = new UCamera();
+	camera = MakeUnique<UCamera>();
 	camera->SetPerspectiveDegrees(60.0f, (backBufferHeight > 0) ? (float)backBufferWidth / (float)backBufferHeight : 1.0f, 0.1f, 1000.0f);
 	camera->LookAt({ -5,0,0 }, { 0,0,0 }, { 0,0,1 });
 
 	return OnInitialize();
 }
 
-UScene* UScene::Create(json::JSON data)
+TUniquePtr<UScene> UScene::Create(json::JSON data)
 {
-	UScene* scene = new UScene();
+	TUniquePtr<UScene> scene = MakeUnique<UScene>();
 	scene->Deserialize(data);
 	return scene;
 }
 
-void UScene::AddObject(USceneComponent* obj)
+void UScene::AddObject(TUniquePtr<USceneComponent> obj)
 {
 	// 런타임에서만 사용 - Scene이 Initialize된 후에 호출할 것
 	assert(meshManager != nullptr && "AddObject should only be called after Scene initialization");
@@ -69,13 +64,13 @@ void UScene::AddObject(USceneComponent* obj)
 		return;
 	}
 
-	objects.push_back(obj);
+	objects.push_back(std::move(obj));
 
 	// 일단 표준 RTTI 사용
-	if (UPrimitiveComponent* primitive = obj->Cast<UPrimitiveComponent>())
+	if (UPrimitiveComponent* primitive = objects.back()->Cast<UPrimitiveComponent>())
 	{
 		primitive->Init(meshManager);
-		if (obj->CountOnInspector())
+		if (objects.back()->CountOnInspector())
 			++primitiveCount;
 	}
 }
@@ -87,7 +82,7 @@ json::JSON UScene::Serialize() const
 	result["Version"] = version;
 	result["NextUUID"] = std::to_string(UEngineStatics::GetNextUUID());
 	int32 validCount = 0;
-	for (UObject* object : objects)
+	for (const TUniquePtr<USceneComponent>& object : objects)
 	{
 		if (object == nullptr) continue;
 		json::JSON _json = object->Serialize();
@@ -116,24 +111,27 @@ bool UScene::Deserialize(const json::JSON& data)
 		json::JSON _data = primitiveJson.second;
 
 		UClass* _class = UClass::FindClassWithDisplayName(_data.at("Type").ToString());
-		USceneComponent* component = nullptr;
-			if(_class != nullptr) component = _class->CreateDefaultObject()->Cast<USceneComponent>();
+		TUniquePtr<USceneComponent> component = nullptr;
+		if(_class != nullptr) {
+			component = _class->CreateUniqueObject<USceneComponent>();
+		}
 
-		component->Deserialize(_data);
-		component->SetUUID(uuid);
-
-		objects.push_back(component);
+		if (component) {
+			component->Deserialize(_data);
+			component->SetUUID(uuid);
+			objects.push_back(std::move(component));
+		}
 		if (component->CountOnInspector())
 			++primitiveCount;
 	}
 	UEngineStatics::SetUUIDGeneration(true);
 
-	USceneComponent* gizmoGrid = new UGizmoGridComp(
-		{ 0.3f, 0.3f, 0.3f },
-		{ 0.0f, 0.0f, 0.0f },
-		{ 0.2f, 0.2f, 0.2f }
+	TUniquePtr<UGizmoGridComp> gizmoGrid = MakeUnique<UGizmoGridComp>(
+		FVector{ 0.3f, 0.3f, 0.3f },
+		FVector{ 0.0f, 0.0f, 0.0f },
+		FVector{ 0.2f, 0.2f, 0.2f }
 	);
-	objects.push_back(gizmoGrid);
+	objects.push_back(std::move(gizmoGrid));
 
 	FString uuidStr = data.at("NextUUID").ToString();
 
@@ -149,9 +147,9 @@ void UScene::Render()
 
 	renderer->SetViewProj(camera->GetView(), camera->GetProj());
 
-	for (UObject* obj : objects)
+	for (const TUniquePtr<USceneComponent>& obj : objects)
 	{
-		if (UPrimitiveComponent* primitive = obj->Cast<UPrimitiveComponent>())
+		if (UPrimitiveComponent* primitive = obj.get()->Cast<UPrimitiveComponent>())
 		{
 			primitive->Draw(*renderer);
 		}

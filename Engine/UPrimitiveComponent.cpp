@@ -28,5 +28,5 @@ void UPrimitiveComponent::Draw(URenderer& renderer)
 	}
 
 	UpdateConstantBuffer(renderer);
-	renderer.DrawMesh(mesh);
+	renderer.DrawMesh(mesh.get());
 }

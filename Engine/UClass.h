@@ -23,7 +23,7 @@ private:
 	bool processed = false;
 public:
 	static UClass* RegisterToFactory(const std::string& typeName, 
-		const std::function<UObject* ()>& createFunction, const std::string& superClassTypeName);
+		const std::function<UObject*()>& createFunction, const std::string& superClassTypeName);
 
 	static void ResolveTypeBitsets();
 	void ResolveTypeBitset(UClass* classPtr);
@@ -53,6 +53,26 @@ public:
 	static const TArray<std::unique_ptr<UClass>>& GetClassList()
 	{
 		return classList;
+	}
+
+	static void CleanupClassRegistry()
+	{
+		char buffer[256];
+		sprintf_s(buffer, "CleanupClassRegistry called: %zu classes registered\n", classList.size());
+		OutputDebugStringA(buffer);
+		
+		// UClass 객체들이 UObject 배열에서도 제거되도록 수동으로 소멸자 호출
+		for (auto& classPtr : classList) {
+			sprintf_s(buffer, "Manually destroying UClass: %s\n", classPtr->className.c_str());
+			OutputDebugStringA(buffer);
+		}
+		
+		classList.clear();  // unique_ptr의 소멸자가 호출되어 UObject 소멸자도 호출됨
+		nameToId.clear();
+		displayNameToId.clear();
+		registeredCount = 0;
+		
+		OutputDebugStringA("CleanupClassRegistry completed\n");
 	}
 
 	bool IsChildOrSelfOf(UClass* baseClass) const {
@@ -91,6 +111,20 @@ public:
 
 	UObject* CreateDefaultObject() const {
 		return createFunction ? createFunction() : nullptr;
+	}
+
+	template<typename T>
+	TUniquePtr<T> CreateUniqueObject() const {
+		UObject* obj = CreateDefaultObject();
+		if (obj) {
+			T* typedObj = obj->Cast<T>();
+			if (typedObj) {
+				return TUniquePtr<T>(typedObj);
+			} else {
+				delete obj; // Cast 실패 시 메모리 해제
+			}
+		}
+		return nullptr;
 	}
 
 };

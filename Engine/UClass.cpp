@@ -61,3 +61,5 @@ void UClass::ResolveTypeBitset(UClass* classPtr)
         stack.pop();
     }
 }
+
+

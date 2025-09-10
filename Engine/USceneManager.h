@@ -4,18 +4,18 @@
 class UScene;
 class UApplication;
 
-class USceneManager : UEngineSubsystem
+class USceneManager : public UEngineSubsystem
 {
     DECLARE_UCLASS(USceneManager, UEngineSubsystem)
 private:
     UApplication* application;
-    UScene* currentScene = nullptr;
+    TUniquePtr<UScene> currentScene;
 public:
     ~USceneManager() override;
     bool Initialize(UApplication* _application);
 
     UScene* GetScene();
-    void SetScene(UScene* scene);
+    void SetScene(TUniquePtr<UScene> scene);
 
     void RequestExit();
     void LoadScene(const FString& path = "");

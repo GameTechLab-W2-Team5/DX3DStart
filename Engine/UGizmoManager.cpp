@@ -18,38 +18,32 @@ UGizmoManager::UGizmoManager()
 
 UGizmoManager::~UGizmoManager()
 {
-	gridPrimitive = nullptr;
-
-	for (auto gizmo : locationGizmos)
-	{
-		delete gizmo;
-	}
+	char buffer[256];
+	sprintf_s(buffer, "UGizmoManager destructor - clearing %zu location, %zu rotation, %zu scale gizmos\n", 
+		locationGizmos.size(), rotationGizmos.size(), scaleGizmos.size());
+	OutputDebugStringA(buffer);
+	
+	gridPrimitive.reset();
 	locationGizmos.clear();
-	for (auto gizmo : rotationGizmos)
-	{
-		delete gizmo;
-	}
 	rotationGizmos.clear();
-	for (auto gizmo : scaleGizmos)
-	{
-		delete gizmo;
-	}
 	scaleGizmos.clear();
+	
+	OutputDebugStringA("UGizmoManager destructor completed\n");
 }
 
 bool UGizmoManager::Initialize(UMeshManager* meshManager)
 {
 	// --- 1. 그리드 생성 ---
 	// 그리드는 항상 원점에 고정
-	gridPrimitive = new UGizmoGridComp();
+	gridPrimitive = MakeUnique<UGizmoGridComp>();
 
 	// =================================================
 
-	UGizmoArrowComp* arrowX = new UGizmoArrowComp();
+	TUniquePtr<UGizmoArrowComp> arrowX = MakeUnique<UGizmoArrowComp>();
 	arrowX->Axis = EAxis::X;
-	UGizmoArrowComp* arrowY = new UGizmoArrowComp();
+	TUniquePtr<UGizmoArrowComp> arrowY = MakeUnique<UGizmoArrowComp>();
 	arrowY->Axis = EAxis::Y;
-	UGizmoArrowComp* arrowZ = new UGizmoArrowComp();
+	TUniquePtr<UGizmoArrowComp> arrowZ = MakeUnique<UGizmoArrowComp>();
 	arrowZ->Axis = EAxis::Z;
 
 	arrowX->SetColor({ 1, 0, 0, 1 });
@@ -60,17 +54,17 @@ bool UGizmoManager::Initialize(UMeshManager* meshManager)
 	arrowY->SetOriginRotation({ 0.0f, 0.0f, 0.0f });
 	arrowZ->SetOriginRotation({ -90.0f, 0.0f, 0.0f });
 
-	locationGizmos.push_back(arrowX);
-	locationGizmos.push_back(arrowZ);
-	locationGizmos.push_back(arrowY);
+	locationGizmos.push_back(std::move(arrowX));
+	locationGizmos.push_back(std::move(arrowZ));
+	locationGizmos.push_back(std::move(arrowY));
 
 	// =================================================
 
-	UGizmoRotationHandleComp* rotationX = new UGizmoRotationHandleComp();
+	TUniquePtr<UGizmoRotationHandleComp> rotationX = MakeUnique<UGizmoRotationHandleComp>();
 	rotationX->Axis = EAxis::X;
-	UGizmoRotationHandleComp* rotationY = new UGizmoRotationHandleComp();
+	TUniquePtr<UGizmoRotationHandleComp> rotationY = MakeUnique<UGizmoRotationHandleComp>();
 	rotationY->Axis = EAxis::Y;
-	UGizmoRotationHandleComp* rotationZ = new UGizmoRotationHandleComp();
+	TUniquePtr<UGizmoRotationHandleComp> rotationZ = MakeUnique<UGizmoRotationHandleComp>();
 	rotationZ->Axis = EAxis::Z;
 
 	rotationX->SetColor({ 1, 0, 0, 1 });
@@ -81,17 +75,17 @@ bool UGizmoManager::Initialize(UMeshManager* meshManager)
 	rotationY->SetOriginRotation({ 0.0f, 0.0f, 0.0f });
 	rotationZ->SetOriginRotation({ -90.0f, 0.0f, 0.0f });
 
-	rotationGizmos.push_back(rotationX);
-	rotationGizmos.push_back(rotationZ);
-	rotationGizmos.push_back(rotationY);
+	rotationGizmos.push_back(std::move(rotationX));
+	rotationGizmos.push_back(std::move(rotationZ));
+	rotationGizmos.push_back(std::move(rotationY));
 
 	// =================================================
 
-	UGizmoScaleHandleComp* scaleX = new UGizmoScaleHandleComp();
+	TUniquePtr<UGizmoScaleHandleComp> scaleX = MakeUnique<UGizmoScaleHandleComp>();
 	scaleX->Axis = EAxis::X;
-	UGizmoScaleHandleComp* scaleY = new UGizmoScaleHandleComp();
+	TUniquePtr<UGizmoScaleHandleComp> scaleY = MakeUnique<UGizmoScaleHandleComp>();
 	scaleY->Axis = EAxis::Y;
-	UGizmoScaleHandleComp* scaleZ = new UGizmoScaleHandleComp();
+	TUniquePtr<UGizmoScaleHandleComp> scaleZ = MakeUnique<UGizmoScaleHandleComp>();
 	scaleZ->Axis = EAxis::Z;
 
 	scaleX->SetColor({ 1, 0, 0, 1 });
@@ -102,30 +96,16 @@ bool UGizmoManager::Initialize(UMeshManager* meshManager)
 	scaleY->SetOriginRotation({ 0.0f, 0.0f, 0.0f });
 	scaleZ->SetOriginRotation({ -90.0f, 0.0f, 0.0f });
 
-	scaleGizmos.push_back(scaleX);
-	scaleGizmos.push_back(scaleZ);
-	scaleGizmos.push_back(scaleY);
+	scaleGizmos.push_back(std::move(scaleX));
+	scaleGizmos.push_back(std::move(scaleZ));
+	scaleGizmos.push_back(std::move(scaleY));
 
 	// =================================================
 
-	if (!gridPrimitive->Init(meshManager) || !arrowX->Init(meshManager) || !arrowY->Init(meshManager) || !arrowZ->Init(meshManager)
-		|| !rotationX->Init(meshManager) || !rotationY->Init(meshManager) || !rotationZ->Init(meshManager)
-		|| !scaleX->Init(meshManager) || !scaleY->Init(meshManager) || !scaleZ->Init(meshManager))
+	if (!gridPrimitive->Init(meshManager) || !locationGizmos[0]->Init(meshManager) || !locationGizmos[1]->Init(meshManager) || !locationGizmos[2]->Init(meshManager)
+		|| !rotationGizmos[0]->Init(meshManager) || !rotationGizmos[1]->Init(meshManager) || !rotationGizmos[2]->Init(meshManager)
+		|| !scaleGizmos[0]->Init(meshManager) || !scaleGizmos[1]->Init(meshManager) || !scaleGizmos[2]->Init(meshManager))
 	{
-		delete gridPrimitive;
-
-		delete arrowX;
-		delete arrowY;
-		delete arrowZ;
-
-		delete rotationX;
-		delete rotationY;
-		delete rotationZ;
-
-		delete scaleX;
-		delete scaleY;
-		delete scaleZ;
-
 		return false;
 	}
 
@@ -170,16 +150,16 @@ void UGizmoManager::NextTranslation()
 	}
 }
 
-TArray<UGizmoComponent*>& UGizmoManager::GetRaycastableGizmos()
+TArray<UGizmoComponent*> UGizmoManager::GetRaycastableGizmos()
 {
+	TArray<UGizmoComponent*> result;
 	if (targetObject == nullptr)
 	{
-		static TArray<UGizmoComponent*> emptyArray; // lives for the whole program
-		return emptyArray;
+		return result;
 	}
 
 	// 현재 모드에 따라 올바른 기즈모를 그립니다.
-	TArray<UGizmoComponent*>* currentGizmos = nullptr;
+	TArray<TUniquePtr<UGizmoComponent>>* currentGizmos = nullptr;
 
 	switch (translationType)
 	{
@@ -193,7 +173,13 @@ TArray<UGizmoComponent*>& UGizmoManager::GetRaycastableGizmos()
 		currentGizmos = &scaleGizmos;
 		break;
 	}
-	return *currentGizmos;
+	
+	if (currentGizmos) {
+		for (const auto& gizmo : *currentGizmos) {
+			result.push_back(gizmo.get());
+		}
+	}
+	return result;
 }
 
 void UGizmoManager::Draw(URenderer& renderer)
@@ -209,7 +195,7 @@ void UGizmoManager::Draw(URenderer& renderer)
 	if (targetObject == nullptr) return;
 
 	// 현재 모드에 따라 올바른 기즈모를 그립니다.
-	TArray<UGizmoComponent*>* currentGizmos = nullptr;
+	TArray<TUniquePtr<UGizmoComponent>>* currentGizmos = nullptr;
 
 	switch (translationType)
 	{
@@ -226,7 +212,7 @@ void UGizmoManager::Draw(URenderer& renderer)
 
 	if (currentGizmos)
 	{
-		for (auto gizmoPart : *currentGizmos)
+		for (const auto& gizmoPart : *currentGizmos)
 		{
 			if (gizmoPart)
 			{

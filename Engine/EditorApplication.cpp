@@ -55,7 +55,7 @@ void EditorApplication::Update(float deltaTime)
 		TArray<UPrimitiveComponent*> primitives;
 		TArray<UGizmoComponent*> gizmos;
 
-		TArray<UGizmoComponent*>& g = gizmoManager.GetRaycastableGizmos();
+		const TArray<UGizmoComponent*>& g = gizmoManager.GetRaycastableGizmos();
 		if (g.size() > 0)
 		{
 			for (UGizmoComponent* gizmo : g)
@@ -65,7 +65,7 @@ void EditorApplication::Update(float deltaTime)
 			}
 		}
 
-		for (UObject* obj : GetSceneManager().GetScene()->GetObjects())
+		for (const TUniquePtr<USceneComponent>& obj : GetSceneManager().GetScene()->GetObjects())
 		{
 			if (UPrimitiveComponent* primitive = obj->Cast<UPrimitiveComponent>())
 			{
@@ -148,8 +148,8 @@ bool EditorApplication::OnInitialize()
 	UApplication::OnInitialize();
 	// 리사이즈/초기화
 
-	controlPanel = new UControlPanel(&GetSceneManager());
-	propertyWindow = new USceneComponentPropertyWindow();
+	controlPanel = MakeUnique<UControlPanel>(&GetSceneManager());
+	propertyWindow = MakeUnique<USceneComponentPropertyWindow>();
 
 	if (!gizmoManager.Initialize(&GetMeshManager()))
 	{
@@ -176,10 +176,11 @@ void EditorApplication::OnResize(int32 width, int32 height)
 		camera->GetFarZ());
 }
 
-UScene* EditorApplication::CreateDefaultScene()
+TUniquePtr<UScene> EditorApplication::CreateDefaultScene()
 {
-	return new UDefaultScene();
+	return MakeUnique<UDefaultScene>();
 }
+
 
 void EditorApplication::OnSceneChange()
 {

@@ -1,16 +1,33 @@
 ﻿#define _CRTDBG_MAP_ALLOC
-// #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+//#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #include <crtdbg.h>
 #include "stdafx.h"
 #include "UApplication.h"
 #include "EditorApplication.h"
 
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
+#ifndef DBG_NEW 
+#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ ) 
+#define new DBG_NEW 
+#endif
+
+
+
+
+
 // Engine entry point
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
+//#ifdef _DEBUG
+//	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+//	//_CrtSetBreakAlloc(959);
+//#endif
+
 #ifdef _DEBUG
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-	// _CrtSetBreakAlloc(951);
 #endif
 
 	// Create application instance

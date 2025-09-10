@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include "UEngineSubsystem.h"
 
-class UInputManager : UEngineSubsystem
+class UInputManager : public UEngineSubsystem
 {
     DECLARE_UCLASS(UInputManager, UEngineSubsystem)
 private:

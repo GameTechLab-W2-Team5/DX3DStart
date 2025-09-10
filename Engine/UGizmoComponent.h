@@ -28,7 +28,7 @@ public:
 	virtual void DrawOnTop(URenderer& renderer);
 	virtual void UpdateConstantBuffer(URenderer& renderer);
 
-	UMesh* GetMesh() { return mesh; }
+	UMesh* GetMesh() { return mesh.get(); }
 
 	void SetOriginRotation(FVector originRotation)
 	{
@@ -39,6 +39,6 @@ public:
 	FVector4 GetColor() const { return Color; }
 
 protected:
-	UMesh* mesh;
+	TSharedPtr<UMesh> mesh;
 	FVector4 Color = { 1, 1, 1, 1 };
 };

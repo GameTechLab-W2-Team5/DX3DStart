@@ -67,7 +67,7 @@ public:
 	// Application state
 	bool IsRunning() const { return bIsRunning; }
 	void RequestExit() { bIsRunning = false; }
-	virtual UScene* CreateDefaultScene();
+	virtual TUniquePtr<UScene> CreateDefaultScene();
 	virtual void OnSceneChange() {}
 
 protected:

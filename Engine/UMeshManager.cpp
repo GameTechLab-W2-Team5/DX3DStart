@@ -7,12 +7,12 @@
 #include "UClass.h"
 
 IMPLEMENT_UCLASS(UMeshManager, UEngineSubsystem)
-UMesh* UMeshManager::CreateMeshInternal(const TArray<FVertexPosColor>& vertices,
+TSharedPtr<UMesh> UMeshManager::CreateMeshInternal(const TArray<FVertexPosColor>& vertices,
 	D3D_PRIMITIVE_TOPOLOGY primitiveType)
 {
 	// vector의 데이터 포인터와 크기를 ConvertVertexData에 전달
 	auto convertedVertices = FVertexPosColor4::ConvertVertexData(vertices.data(), vertices.size());
-	UMesh* mesh = new UMesh(convertedVertices, primitiveType);
+	TSharedPtr<UMesh> mesh = MakeShared<UMesh>(convertedVertices, primitiveType);
 	return mesh;
 }
 
@@ -31,10 +31,6 @@ UMeshManager::UMeshManager()
 // 소멸자 (메모리 해제)
 UMeshManager::~UMeshManager()
 {
-	for (auto& pair : meshes)
-	{
-		delete pair.second;
-	}
 	meshes.clear();
 }
 
@@ -63,7 +59,7 @@ bool UMeshManager::Initialize(URenderer* renderer)
 	return true;
 }
 
-UMesh* UMeshManager::RetrieveMesh(FString meshName)
+TSharedPtr<UMesh> UMeshManager::RetrieveMesh(FString meshName)
 {
 	auto itr = meshes.find(meshName);
 	if (itr == meshes.end()) return nullptr;
